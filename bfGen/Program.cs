@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace bfGen
@@ -7,13 +8,14 @@ namespace bfGen
     {
         static void Main(string[] args)
         {
+            int programLength = 6;
+
             List<char> theOperators = new List<char> { '.', '>', '<', '[', ']', '+', '-' }; //there is NO "read" here
             int numOperators = theOperators.Count;
-
-            int programLength = 5;
+            List<string> thePrograms = new List<string>();
 
             int NumberOfProgramStrings = Convert.ToInt32(Math.Pow(numOperators, programLength));
-            int validProgramNumber = 0;
+
             for (int i = 0; i < NumberOfProgramStrings; i++)
             {
                 int worker = i;
@@ -27,9 +29,16 @@ namespace bfGen
                 if (IsValid(possibleProgramString))
                 {
                     string opt = Optimise(possibleProgramString);
-                    Console.WriteLine($"{(++validProgramNumber).ToString().PadLeft(programLength + 2)} {i.ToString().PadLeft(programLength + 2)}       {new string(possibleProgramString)}       {opt}");
+                        thePrograms.Add(opt);
                 }
             }
+            List<string> dis = thePrograms.Distinct().ToList();
+            dis.Sort((a,b)=>(a.Length.CompareTo(b.Length)));
+
+            int k = 0;
+            foreach (string s in dis)
+                Console.WriteLine($"{(++k).ToString().PadLeft(5)}  {s}");
+
             Console.ReadLine();
         }
         private static string Optimise(char[] res)
@@ -53,44 +62,45 @@ namespace bfGen
                     {
                         worker.RemoveAt(i);
                         worker.RemoveAt(i - 1);
-                        again = true;
+                        again = true;           // we haven't necessarily finished yet - try again
                         break;
                     }
                 }
 
-                //if we start a loop with zero - we can diss the loop!
-                int startingBracePosition = 0;
-                bool loopStart = false;
-                do
+                if (worker.Count > 0)           // we might have already removed EVERYTHING!
                 {
-                    if (worker[startingBracePosition] == '[' )
-                    {
-                        loopStart = true;
-                        break;
-                    }
-                    if ( worker[startingBracePosition] == '+' || worker[startingBracePosition] == '-')
-                    {
-                        loopStart = false;
-                        break;
-                    }
-                } while (loopStart);
+                    //if we start a loop with zero - we can diss the loop!
+                    bool weHaveALoop = false;
+                    int startingBracePosition = 0;
 
-                while (loopStart && worker.Count > 0)
-                {
-                    int depth = 1;
-                    int endingBracePosition = startingBracePosition;
-                    while (depth > 0)
-                        switch (worker[++endingBracePosition])
+                    char ch = worker[startingBracePosition];
+                    while (++startingBracePosition < worker.Count && ch != '+' && ch != '-')
+                    {
+                        if (ch == '[')
                         {
-                            case '[': depth++; break;
-                            case ']': depth--; break;
-                            default: break;
+                            startingBracePosition--;
+                            weHaveALoop = true;
+                            break;
                         }
-                    for ( int ind = endingBracePosition; ind >= startingBracePosition; ind--)
-                        worker.RemoveAt(ind);
+                        ch = worker[startingBracePosition];
+                    };
 
-                    loopStart = false;
-                    again = true;
+                    if (weHaveALoop && worker.Count > 0)
+                    {
+                        int depth = 1;
+                        int endingBracePosition = startingBracePosition;
+                        while (depth > 0)
+                            switch (worker[++endingBracePosition])
+                            {
+                                case '[': depth++; break;
+                                case ']': depth--; break;
+                                default: break;
+                            }
+                        for (int ind = endingBracePosition; ind >= startingBracePosition; ind--)
+                            worker.RemoveAt(ind);
+
+                        again = true;
+                    }
                 }
             } while (again);
 
