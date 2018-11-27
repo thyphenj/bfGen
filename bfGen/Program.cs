@@ -11,10 +11,13 @@ namespace bfGen
             int programLength = 6;
 
             List<char> theOperators = new List<char> { '.', '>', '<', '[', ']', '+', '-' }; //there is NO "read" here
-            int numOperators = theOperators.Count;
-            List<string> thePrograms = new List<string>();
 
-            int NumberOfProgramStrings = Convert.ToInt32(Math.Pow(numOperators, programLength));
+            var BFprogList = new BFProgramList ();
+
+            int numOperators = theOperators.Count;
+            List<string> thePrograms = new List<string> ();
+
+            int NumberOfProgramStrings = Convert.ToInt32 (Math.Pow (numOperators, programLength));
 
             for (int i = 0; i < NumberOfProgramStrings; i++)
             {
@@ -26,24 +29,26 @@ namespace bfGen
                     possibleProgramString[j] = theOperators[worker % numOperators];
                     worker /= numOperators;
                 }
-                if (IsValid(possibleProgramString))
+                BFprogList.Add (new BFprogram (new string (possibleProgramString)));
+
+                if (IsValid (possibleProgramString))
                 {
-                    string opt = Optimise(possibleProgramString);
-                        thePrograms.Add(opt);
+                    string opt = Optimise (possibleProgramString);
+                    thePrograms.Add (opt);
                 }
             }
-            List<string> dis = thePrograms.Distinct().ToList();
-            dis.Sort((a,b)=>(a.Length.CompareTo(b.Length)));
+            List<string> dis = thePrograms.Distinct ().ToList ();
+            dis.Sort ((a, b) => (a.Length.CompareTo (b.Length)));
 
             int k = 0;
             foreach (string s in dis)
-                Console.WriteLine($"{(++k).ToString().PadLeft(5)}  {s}");
+                Console.WriteLine ($"{(++k).ToString ().PadLeft (5)}  {s}");
 
-            Console.ReadLine();
+            Console.ReadLine ();
         }
         private static string Optimise(char[] res)
         {
-            List<char> worker = new List<char>(res);
+            List<char> worker = new List<char> (res);
             bool again;
 
             do
@@ -60,8 +65,8 @@ namespace bfGen
                         (worker[i] == '-' && worker[i - 1] == '+')
                         )
                     {
-                        worker.RemoveAt(i);
-                        worker.RemoveAt(i - 1);
+                        worker.RemoveAt (i);
+                        worker.RemoveAt (i - 1);
                         again = true;           // we haven't necessarily finished yet - try again
                         break;
                     }
@@ -92,12 +97,17 @@ namespace bfGen
                         while (depth > 0)
                             switch (worker[++endingBracePosition])
                             {
-                                case '[': depth++; break;
-                                case ']': depth--; break;
-                                default: break;
+                                case '[':
+                                    depth++;
+                                    break;
+                                case ']':
+                                    depth--;
+                                    break;
+                                default:
+                                    break;
                             }
                         for (int ind = endingBracePosition; ind >= startingBracePosition; ind--)
-                            worker.RemoveAt(ind);
+                            worker.RemoveAt (ind);
 
                         again = true;
                     }
@@ -121,7 +131,8 @@ namespace bfGen
                         inLoopCount++;
                         break;
                     case ']':
-                        if (inLoopCount <= 0) return false;
+                        if (inLoopCount <= 0)
+                            return false;
                         inLoopCount--;
                         break;
                     case '.':
@@ -130,7 +141,8 @@ namespace bfGen
                     default:
                         break;
                 }
-            if (inLoopCount > 0) return false;
+            if (inLoopCount > 0)
+                return false;
 
             return producesOutput;
         }
